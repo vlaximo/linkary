@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LinkHub Ejecutivo</title>
+  <meta name="description" content="Tablero elegante de accesos rápidos a tus links con imágenes, títulos, descripciones y categorías. Con agregar, editar y eliminar de enlaces y categorías, e importación/exportación JSON." />
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --card:#0f1621cc;
+      --text:#dfe7f5;
+      --muted:#8aa0b6;
+      --accent:#3ea6ff;
+      --ring:#58c3ff55;
+      --shadow:0 10px 30px rgba(0,0,0,.35);
+      --radius:20px;
+      --danger:#ff5d5d;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; color:var(--text); background: radial-gradient(1200px 700px at 10% -10%, #0f2541 0,#0b0f14 60%), radial-gradient(900px 500px at 110% 20%, #1a2433 0,#0b0f14 60%)}
+    header{position:sticky; top:0; z-index:10; backdrop-filter:saturate(160%) blur(10px); background:linear-gradient(180deg, rgba(11,15,20,.9), rgba(11,15,20,.6) 60%, transparent); border-bottom:1px solid #1b2636}
+    .wrap{max-width:1200px; margin:0 auto; padding:18px 18px}
+    .brand{display:flex; align-items:center; gap:14px}
+    .logo{width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, var(--accent), #8ed0ff); box-shadow:0 2px 10px #2f7fb833}
+    h1{font-size:20px; margin:0}
+    .actions{display:flex; gap:10px; margin-left:auto}
+    .bar{display:flex; align-items:center; gap:14px}
+    input[type="search"], input[type="text"], input[type="url"], textarea, select{padding:12px 14px; border-radius:12px; border:1px solid #243246; background:#0d141e; color:var(--text); outline:none}
+    input[type="search"]{flex:1; min-width:230px}
+    input[type="search"]:focus, input:focus, textarea:focus, select:focus{box-shadow:0 0 0 4px var(--ring); border-color:#2b3c56}
+    .btn{padding:10px 14px; border-radius:12px; background:#122033; color:var(--text); border:1px solid #22324a; cursor:pointer}
+    .btn:hover{background:#142540}
+    .btn.primary{background:linear-gradient(135deg, #1d5b8e, #3ea6ff); border:none}
+    .btn.ghost{background:transparent; border:1px dashed #2f4561}
+    .btn.danger{background:#361c1c; border:1px solid #5a2d2d}
+
+    main{padding:18px 18px 60px}
+    .grid{max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:18px}
+
+    .tabs{max-width:1200px; margin:6px auto 16px; display:flex; flex-wrap:wrap; gap:8px}
+    .tab{border:1px solid #22324a; background:#0e1724; color:var(--text); padding:8px 12px; border-radius:999px; cursor:pointer; font-size:13px}
+    .tab[data-active="true"]{background:linear-gradient(135deg, #173652, #2e79b5); border-color:transparent}
+    .tab .badge{margin-left:8px; font-size:11px; opacity:.85; background:#0a1420; padding:2px 6px; border-radius:999px; border:1px solid #22324a}
+
+    .card{position:relative; overflow:hidden; border-radius:var(--radius); background:var(--card); border:1px solid #1c2736; box-shadow:var(--shadow); transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
+    .card:hover{transform:translateY(-3px); box-shadow:0 18px 40px rgba(0,0,0,.45); border-color:#29435d}
+    .thumb{width:100%; aspect-ratio:16/9; object-fit:cover; background:#111722}
+    .content{padding:14px}
+    .title{font-weight:600; font-size:16px; line-height:1.25; margin:0 0 6px}
+    .desc{font-size:13px; color:var(--muted); margin:0 0 8px; min-height:38px}
+    .meta{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px}
+    .meta img{width:16px; height:16px; border-radius:4px}
+    .chip{position:absolute; left:12px; top:12px; font-size:11px; padding:6px 8px; border-radius:999px; border:1px solid #2a3a52; background:rgba(0,0,0,.45)}
+    .open{position:absolute; top:12px; right:12px; font-size:12px; background:rgba(0,0,0,.5); color:#fff; padding:6px 8px; border-radius:10px; text-decoration:none; border:1px solid #2a3a52}
+    .open:hover{background:rgba(0,0,0,.7)}
+    .tools{position:absolute; right:12px; bottom:12px; display:flex; gap:6px}
+    .tool{font-size:12px; background:rgba(0,0,0,.45); color:#fff; padding:6px 8px; border-radius:999px; border:1px solid #2a3a52; cursor:pointer}
+    .tool:hover{background:rgba(0,0,0,.6)}
+
+    /* Modal base */
+    .backdrop{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:50}
+    .backdrop.active{display:flex}
+    .modal{width:min(860px,92vw); background:#0f1621; border:1px solid #22324a; border-radius:16px; box-shadow:var(--shadow)}
+    .modal header{position:relative; border-bottom:1px solid #22324a; background:#0f1621}
+    .modal .wrap{padding:14px 16px}
+    .modal main{padding:0}
+    .modal footer{display:flex; justify-content:flex-end; gap:10px; padding:14px 16px; border-top:1px solid #22324a}
+
+    .form{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px}
+    .form .full{grid-column:1 / -1}
+    .preview{grid-column:1 / -1; display:flex; align-items:center; gap:12px}
+    .preview img{width:180px; height:110px; object-fit:cover; border-radius:12px; border:1px solid #22324a}
+    .muted{color:var(--muted); font-size:12px}
+
+    /* Gestor de categorías */
+    .cat-list{padding:16px}
+    .cat-item{display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:center; padding:8px 0; border-bottom:1px dashed #22324a}
+    .cat-tools{display:flex; gap:6px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap" style="display:flex; align-items:center; gap:14px;">
+      <div class="brand"><div class="logo"></div><h1>LinkHub Ejecutivo</h1></div>
+      <div class="actions" style="margin-left:auto">
+        <div class="bar">
+          <input id="search" type="search" placeholder="Buscar por título o dominio… (Ctrl/⌘+K)" />
+          <button class="btn" id="catBtn">🗂 Categorías</button>
+          <button class="btn" id="newBtn">➕ Nuevo link</button>
+          <button class="btn" id="importBtn">📥 Importar</button>
+          <input type="file" id="importFile" accept="application/json,.json" style="display:none" />
+          <button class="btn ghost" id="exportBtn">⬇️ Exportar</button>
+          <button class="btn primary" id="openAll">Abrir todos</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <nav class="tabs" id="tabs"></nav>
+    <div class="grid" id="grid"></div>
+  </main>
+
+  <!-- Modal CRUD Links -->
+  <div class="backdrop" id="backdrop" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="dlgTitle">
+      <header><div class="wrap"><h2 id="dlgTitle" style="margin:0;font-size:18px">Agregar/Editar link</h2></div></header>
+      <main>
+        <form class="form" id="linkForm">
+          <input type="hidden" id="idx" />
+          <label class="full">Categoría
+            <select id="fCategory"></select>
+          </label>
+          <label>Título
+            <input type="text" id="fTitle" required placeholder="Ej. Curso de HTML" />
+          </label>
+          <label>URL
+            <input type="url" id="fUrl" required placeholder="https://…" />
+          </label>
+          <label class="full">Descripción
+            <textarea id="fDesc" rows="3" placeholder="¿De qué trata este enlace?"></textarea>
+          </label>
+          <label>Imagen por URL (opcional)
+            <input type="url" id="fImage" placeholder="https://…/imagen.jpg" />
+          </label>
+          <label>Imagen local (opcional)
+            <input type="file" id="fImageFile" accept="image/*" />
+          </label>
+          <div class="preview">
+            <img id="fPreview" alt="Previsualización" src="" style="display:none" />
+            <span class="muted" id="fInfo">Puedes usar **una**: por URL o cargando desde tu PC. Si subes local, se guarda embebida en el navegador (base64).</span>
+            <button class="btn ghost" type="button" id="fClearImg">Quitar imagen</button>
+          </div>
+        </form>
+      </main>
+      <footer>
+        <button class="btn" id="cancelBtn">Cancelar</button>
+        <button class="btn primary" id="saveBtn">Guardar</button>
+      </footer>
+    </div>
+  </div>
+
+  <!-- Modal Gestor de Categorías -->
+  <div class="backdrop" id="backdropCats" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="catTitle">
+      <header><div class="wrap"><h2 id="catTitle" style="margin:0;font-size:18px">Gestionar categorías</h2></div></header>
+      <main>
+        <div class="cat-list" id="catList"></div>
+        <div class="form">
+          <label class="full">Nueva categoría
+            <input type="text" id="catNew" placeholder="Ej. Documentación interna" />
+          </label>
+        </div>
+      </main>
+      <footer>
+        <span class="muted" style="margin-right:auto">“Todos” es fija y no se puede editar ni eliminar.</span>
+        <button class="btn" id="catClose">Cerrar</button>
+        <button class="btn primary" id="catAdd">Agregar</button>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // ===== Persistencia =====
+    const LS_LINKS = 'linkhub:links:v7';
+    const LS_CATS  = 'linkhub:cats:v1';
+
+    const DEFAULT_CATS = [
+      'Links para estudiar',
+      'Links de programadores sin saber programar',
+      'Link Hacker',
+      'Link para marketing y publicidad',
+      'Link para empresas y empleados',
+      'Link para emprendedores',
+      'Link de Ocio y hobbies',
+      'Link IA'
+    ];
+
+    const DEMO = [
+      { id: String(Date.now()),   title: 'Curso de HTML básico', url: 'https://developer.mozilla.org/es/docs/Learn/Getting_started_with_the_web/HTML_basics', image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=1600&q=80&auto=format&fit=crop', desc: 'Guía introductoria al lenguaje HTML, ideal para principiantes.', category: 'Links para estudiar' },
+      { id: String(Date.now()+1), title: 'OpenAI', url: 'https://openai.com', desc: 'Explora novedades y herramientas de IA.', category: 'Link IA' }
+    ];
+
+    // ===== Elementos =====
+    const $grid = document.getElementById('grid');
+    const $tabs = document.getElementById('tabs');
+    const $search = document.getElementById('search');
+    const $openAll = document.getElementById('openAll');
+    const $exportBtn = document.getElementById('exportBtn');
+    const $importBtn = document.getElementById('importBtn');
+    const $importFile = document.getElementById('importFile');
+    const $newBtn = document.getElementById('newBtn');
+    const $catBtn = document.getElementById('catBtn');
+
+    const $backdrop = document.getElementById('backdrop');
+    const $linkForm = document.getElementById('linkForm');
+    const $idx = document.getElementById('idx');
+    const $fCategory = document.getElementById('fCategory');
+    const $fTitle = document.getElementById('fTitle');
+    const $fUrl = document.getElementById('fUrl');
+    const $fDesc = document.getElementById('fDesc');
+    const $fImage = document.getElementById('fImage');
+    const $fImageFile = document.getElementById('fImageFile');
+    const $fPreview = document.getElementById('fPreview');
+    const $fInfo = document.getElementById('fInfo');
+    const $fClearImg = document.getElementById('fClearImg');
+    const $cancelBtn = document.getElementById('cancelBtn');
+    const $saveBtn = document.getElementById('saveBtn');
+
+    const $backdropCats = document.getElementById('backdropCats');
+    const $catList = document.getElementById('catList');
+    const $catNew = document.getElementById('catNew');
+    const $catClose = document.getElementById('catClose');
+    const $catAdd = document.getElementById('catAdd');
+
+    // ===== Estado =====
+    const state = {
+      links: (()=>{ try{ const raw = localStorage.getItem(LS_LINKS); let data = raw? JSON.parse(raw): DEMO; return data.map(x=> ({...x, id: String(x.id ?? (Date.now()+Math.random()))})); } catch { return DEMO } })(),
+      categories: (()=>{ try{ const raw = localStorage.getItem(LS_CATS); return raw? JSON.parse(raw): DEFAULT_CATS } catch { return DEFAULT_CATS } })(),
+      category: 'Todos',
+      filtered: []
+    };
+
+    // ===== Utils =====
+    const ALL = 'Todos';
+    function domainFrom(u){ try{ return new URL(u).hostname.replace('www.','') } catch { return '' } }
+    function fallbackImg(u){ const d=domainFrom(u); return d?`https://www.google.com/s2/favicons?domain=${d}&sz=128`:'' }
+    function saveLinks(){ localStorage.setItem(LS_LINKS, JSON.stringify(state.links)); }
+    function saveCats(){ localStorage.setItem(LS_CATS, JSON.stringify(state.categories)); }
+
+    // ===== Render =====
+    function countByCat(list){
+      const cats = [ALL, ...state.categories];
+      const m = Object.fromEntries(cats.map(k=>[k,0]));
+      list.forEach(x=>{ const c = (x.category && state.categories.includes(x.category))? x.category : ALL; m[ALL]++; m[c]++ });
+      return m;
+    }
+
+    function renderTabs(){
+      const counts = countByCat(state.links);
+      const cats = [ALL, ...state.categories];
+      $tabs.innerHTML = cats.map(cat=>{
+        const active = state.category===cat;
+        return `<button class="tab" data-cat="${cat}" ${active?"data-active='true'":''}>${cat}<span class="badge">${counts[cat]||0}</span></button>`;
+      }).join('');
+      $tabs.querySelectorAll('.tab').forEach(b=> b.onclick = ()=>{ state.category=b.dataset.cat; renderGrid(); });
+    }
+
+    function cardTpl(item){
+      const img = item.image || fallbackImg(item.url);
+      const dom = domainFrom(item.url);
+      return `
+        <article class="card">
+          <span class="chip">${item.category||'Sin categoría'}</span>
+          <a class="open" href="${item.url}" target="_blank" rel="noopener">Abrir</a>
+          ${img? `<img class="thumb" loading="lazy" src="${img}" alt="">` : `<div class="thumb"></div>`}
+          <div class="content">
+            <h3 class="title">${item.title}</h3>
+            <p class="desc">${item.desc? item.desc: ''}</p>
+            <div class="meta">${dom? `<img src="${fallbackImg(item.url)}" alt=""> ${dom}` : ''}</div>
+          </div>
+          <div class="tools">
+            <button type="button" class="tool" data-action="edit" data-id="${String(item.id)}" title="Editar">✏️</button>
+            <button type="button" class="tool" data-action="del" data-id="${String(item.id)}" title="Eliminar">🗑</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderGrid(){
+      const q = ($search.value||'').toLowerCase();
+      const filtered = state.links.filter(x=>{
+        const text = `${x.title||''} ${x.desc||''} ${domainFrom(x.url)}`.toLowerCase();
+        const matchText = !q || text.includes(q);
+        const matchCat = state.category===ALL ? true : (x.category===state.category);
+        return matchText && matchCat;
+      });
+      state.filtered = filtered;
+      $grid.innerHTML = filtered.map((it)=> cardTpl(it)).join('');
+    }
+
+    function render(){ renderTabs(); renderGrid(); }
+
+    // ===== Delegación de eventos (una sola vez) =====
+    // Acciones en tarjetas (editar/eliminar)
+    $grid.addEventListener('click', (ev)=>{
+      const btn = ev.target.closest('.tool');
+      if(!btn) return;
+      const id = String(btn.dataset.id||'');
+      const act = btn.dataset.action;
+      const item = state.links.find(x=> String(x.id)===id);
+      if(!item) return;
+      if(act==='edit') openForm(item);
+      if(act==='del') deleteItem(item);
+    });
+
+    // ===== CRUD Enlaces =====
+    function openForm(item){
+      $fCategory.innerHTML = state.categories.map(c=>`<option value="${c}">${c}</option>`).join('');
+      if(item){
+        $idx.value = String(item.id);
+        $fCategory.value = (item.category && state.categories.includes(item.category))? item.category : state.categories[0];
+        $fTitle.value = item.title||'';
+        $fUrl.value = item.url||'';
+        $fDesc.value = item.desc||'';
+        $fImage.value = item.image && !item.image.startsWith('data:') ? item.image : '';
+        if(item.image){ showPreview(item.image); }
+        document.getElementById('dlgTitle').textContent = 'Editar link';
+      } else {
+        $idx.value = '';
+        $fCategory.value = state.categories[0]||'';
+        $fTitle.value = '';
+        $fUrl.value = '';
+        $fDesc.value = '';
+        $fImage.value = '';
+        hidePreview();
+        document.getElementById('dlgTitle').textContent = 'Agregar link';
+      }
+      $backdrop.classList.add('active');
+      setTimeout(()=> $fTitle.focus(), 0);
+    }
+
+    function closeForm(){ $backdrop.classList.remove('active'); }
+
+    function showPreview(src){
+      if(src){ $fPreview.src = src; $fPreview.style.display = 'block'; }
+      else hidePreview();
+    }
+    function hidePreview(){ $fPreview.src = ''; $fPreview.style.display = 'none'; }
+
+    // Cargar imagen local → convertir a DataURL y ponerla en el campo imagen
+    $fImageFile.addEventListener('change', async (e)=>{
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      if(!file.type.startsWith('image/')){ alert('Selecciona un archivo de imagen.'); return; }
+      if(file.size > 2 * 1024 * 1024){ if(!confirm('La imagen pesa más de 2MB. ¿Continuar? (podría ocupar mucho en el respaldo)')) return; }
+      const reader = new FileReader();
+      reader.onload = ()=>{ const dataUrl = reader.result; $fImage.value = String(dataUrl); showPreview(String(dataUrl)); };
+      reader.onerror = ()=> alert('No se pudo leer el archivo.');
+      reader.readAsDataURL(file);
+    });
+
+    $fImage.addEventListener('input', ()=>{ const v=$fImage.value.trim(); if(v){ showPreview(v); } else { hidePreview(); } });
+    $fClearImg.addEventListener('click', ()=>{ $fImage.value=''; $fImageFile.value=''; hidePreview(); });
+
+    function saveForm(){
+      if(!$linkForm.reportValidity()) return;
+      const data = {
+        category: $fCategory.value,
+        title: $fTitle.value.trim(),
+        url: $fUrl.value.trim(),
+        desc: $fDesc.value.trim(),
+        image: $fImage.value.trim() // puede ser URL o data:base64
+      };
+      const id = $idx.value ? String($idx.value) : null;
+      if(id){
+        const pos = state.links.findIndex(x=> String(x.id)===String(id));
+        if(pos>=0) state.links[pos] = { id, ...data };
+      } else {
+        state.links.unshift({ id: String(Date.now()), ...data });
+      }
+      saveLinks();
+      closeForm();
+      render();
+    }
+
+    function deleteItem(item){
+      if(!item) return;
+      if(!confirm('¿Eliminar este link?')) return;
+      const pos = state.links.findIndex(x=> String(x.id)===String(item.id));
+      if(pos>=0){ state.links.splice(pos,1); saveLinks(); render(); }
+    }
+
+    // ===== Gestor de Categorías =====
+    function openCatManager(){ drawCatList(); $backdropCats.classList.add('active'); setTimeout(()=> $catNew.focus(), 0); }
+    function closeCatManager(){ $backdropCats.classList.remove('active'); }
+
+    function drawCatList(){
+      if(state.categories.length===0){ state.categories = [...DEFAULT_CATS]; saveCats(); }
+      $catList.innerHTML = state.categories.map((name, i)=>{
+        return `
+          <div class="cat-item">
+            <input type="text" value="${name}" data-idx="${i}" class="cat-name" />
+            <div class="cat-tools">
+              <button type="button" class="btn" data-act="rename" data-idx="${i}">Renombrar</button>
+              <button type="button" class="btn danger" data-act="del" data-idx="${i}">Eliminar</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Delegación para botones del gestor de categorías (una sola vez)
+    $catList.addEventListener('click', (e)=>{
+      const btn = e.target.closest('button');
+      if(!btn) return;
+      const idx = Number(btn.dataset.idx);
+      const act = btn.dataset.act;
+      if(Number.isNaN(idx) || !act) return;
+      if(act==='rename'){
+        const input = $catList.querySelector(`input.cat-name[data-idx="${idx}"]`);
+        const next = (input?.value||'').trim();
+        const prev = state.categories[idx];
+        if(!next || next===prev) return;
+        if(state.categories.includes(next)) return alert('Ya existe una categoría con ese nombre.');
+        state.categories[idx] = next;
+        state.links = state.links.map(x=> x.category===prev? {...x, category: next}: x);
+        saveCats(); saveLinks(); render(); drawCatList();
+      }
+      if(act==='del'){
+        const toDel = state.categories[idx];
+        if(!confirm(`Eliminar la categoría "${toDel}"? Los links se reasignarán.`)) return;
+        const fallback = state.categories.find((c,j)=> j!==idx) || null;
+        state.links = state.links.map(x=> x.category===toDel? {...x, category: (fallback||'') }: x);
+        state.categories.splice(idx,1);
+        saveCats(); saveLinks();
+        if(state.category===toDel) state.category = ALL;
+        render(); drawCatList();
+      }
+    });
+
+    function addCategory(name){
+      const n = name.trim();
+      if(!n) return;
+      if(n===ALL) return alert('“Todos” es fija. Elige otro nombre.');
+      if(state.categories.includes(n)) return alert('Ya existe esa categoría.');
+      state.categories.push(n);
+      saveCats(); render(); drawCatList();
+    }
+
+    // ===== Eventos =====
+    $newBtn.onclick = ()=> openForm();
+    $cancelBtn.onclick = (e)=>{ e.preventDefault(); closeForm(); };
+    $saveBtn.onclick = (e)=>{ e.preventDefault(); saveForm(); };
+    $backdrop.addEventListener('click', (e)=>{ if(e.target===$backdrop) closeForm(); });
+
+    $catBtn.onclick = ()=> openCatManager();
+    $catClose.onclick = ()=> closeCatManager();
+    $catAdd.onclick = ()=>{ addCategory($catNew.value); $catNew.value=''; $catNew.focus(); };
+    $backdropCats.addEventListener('click', (e)=>{ if(e.target===$backdropCats) closeCatManager(); });
+
+    $search.addEventListener('input', renderGrid);
+    window.addEventListener('keydown', (e)=>{
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); $search.focus(); }
+      if(e.key==='Escape' && $backdrop.classList.contains('active')) closeForm();
+      if(e.key==='Escape' && $backdropCats.classList.contains('active')) closeCatManager();
+    });
+
+    $openAll.onclick = ()=>{ (state.filtered.length? state.filtered: state.links).forEach(it=> window.open(it.url,'_blank')); };
+
+    $exportBtn.onclick = ()=>{
+      const blob = new Blob([JSON.stringify(state.links, null, 2)], {type:'application/json'});
+      const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href=url; a.download='mis_enlaces.json'; a.click(); URL.revokeObjectURL(url);
+    };
+
+    // ===== Importar JSON =====
+    $importBtn.onclick = ()=> $importFile.click();
+    $importFile.onchange = async (e)=>{
+      const file = e.target.files && e.target.files[0];
+      if(!file) return;
+      try{
+        const text = await file.text();
+        const data = JSON.parse(text);
+        if(Array.isArray(data)){
+          if(!data.every(x=> typeof x.url==='string')) throw new Error('El JSON no parece ser una lista válida de enlaces.');
+          state.links = data.map(x=> ({ id: String(x.id || Date.now()+Math.random()), ...x }));
+          saveLinks();
+          render();
+          alert(`Importado ${state.links.length} enlaces.`);
+        } else if (data && (Array.isArray(data.links) || Array.isArray(data.categories))){
+          if(Array.isArray(data.categories)){
+            state.categories = data.categories.filter(Boolean);
+            saveCats();
+          }
+          if(Array.isArray(data.links)){
+            state.links = data.links.map(x=> ({ id: String(x.id || Date.now()+Math.random()), ...x }));
+            saveLinks();
+          }
+          render();
+          alert(`Importación completa. Enlaces: ${state.links.length}${Array.isArray(data.categories)?`, Categorías: ${state.categories.length}`:''}`);
+        } else {
+          throw new Error('Formato no reconocido. Usa una lista de enlaces o un objeto {links, categories}.');
+        }
+      } catch(err){
+        console.warn('Error al importar:', err);
+        alert('No se pudo importar el JSON: '+ err.message);
+      } finally {
+        $importFile.value = '';
+      }
+    };
+
+    // ===== Init =====
+    render();
+
+    // ===== Tests (consola) =====
+    (function runTests(){
+      try{
+        const tests=[]; const assert=(n,c)=>tests.push({n,ok:!!c});
+        // Tabs
+        assert('Renderiza pestañas', $tabs.children.length === (1 + state.categories.length));
+        // Grid
+        assert('Renderiza tarjetas', $grid.children.length>0);
+        // Imagen data URL preferida
+        const gif1px = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAgAAA7';
+        state.links.unshift({id: 777777, title:'Test Img Local', url:'https://ejemplo.com', image: gif1px, desc:'img local', category: state.categories[0]});
+        saveLinks(); renderGrid();
+        assert('Acepta dataURL como imagen', $grid.innerHTML.includes('data:image/gif;base64'));
+        // Limpieza test
+        const pos = state.links.findIndex(x=>x.id===777777); if(pos>-1){ state.links.splice(pos,1); saveLinks(); renderGrid(); }
+
+        const ok = tests.filter(t=>t.ok).length; const fail = tests.length-ok;
+        console.log('LinkHub Tests'); tests.forEach(t=>console.log(`${t.ok?'✅':'❌'} ${t.n}`)); if(fail) console.warn(`Fallaron ${fail}/${tests.length}`);
+      }catch(err){ console.warn('Error en pruebas:', err); }
+    })();
+  </script>
+</body>
+</html>
