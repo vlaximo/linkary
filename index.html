@@ -6,14 +6,12 @@
   <title>Linkary</title>
   <meta name="description" content="Guarda, clasifica y comparte tus links con previsualizaciones de reels y videos (Instagram, TikTok, YouTube)." />
   <style>
-    :root{
-      --bg:#0b0f14; --card:#0f1621cc; --text:#dfe7f5; --muted:#8aa0b6; --accent:#3ea6ff; --ring:#58c3ff55; --shadow:0 10px 30px rgba(0,0,0,.35); --radius:20px; --danger:#ff5d5d;
-    }
+    :root{ --bg:#0b0f14; --card:#0f1621cc; --text:#dfe7f5; --muted:#8aa0b6; --accent:#3ea6ff; --ring:#58c3ff55; --shadow:0 10px 30px rgba(0,0,0,.35); --radius:20px; --danger:#ff5d5d; }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; color:var(--text); background: radial-gradient(1200px 700px at 10% -10%, #0f2541 0,#0b0f14 60%), radial-gradient(900px 500px at 110% 20%, #1a2433 0,#0b0f14 60%)}
     header{position:sticky; top:0; z-index:10; backdrop-filter:saturate(160%) blur(10px); background:linear-gradient(180deg, rgba(11,15,20,.9), rgba(11,15,20,.6) 60%, transparent); border-bottom:1px solid #1b2636}
-    .wrap{max-width:1200px; margin:0 auto; padding:18px 18px}
+    .wrap{max-width:1200px; margin:0 auto; padding:18px}
     .brand{display:flex; align-items:center; gap:14px}
     .logo{width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, var(--accent), #8ed0ff); box-shadow:0 2px 10px #2f7fb833}
     h1{font-size:20px; margin:0}
@@ -288,9 +286,6 @@
       const img = item.image || fallbackImg(item.url);
       return img? `<div class="media"><img class="thumb" loading="lazy" src="${img}" alt=""></div>` : `<div class="media"></div>`;
     }
-      const img = item.image || fallbackImg(item.url);
-      return img? `<div class="media"><img class="thumb" loading="lazy" src="${img}" alt=""></div>` : `<div class="media"></div>`;
-    }
 
     function cardTpl(item){
       const dom = domainFrom(item.url);
@@ -326,13 +321,6 @@
       // Procesa embeds después del render (si los scripts ya cargaron)
       if(window.instgrm && window.instgrm.Embeds && window.instgrm.Embeds.process){ window.instgrm.Embeds.process(); }
       if(window.tiktokEmbedLoad){ try{ window.tiktokEmbedLoad(); }catch(e){} }
-    } ${x.desc||''} ${domainFrom(x.url)}`.toLowerCase();
-        const matchText = !q || text.includes(q);
-        const matchCat = state.category===ALL ? true : (x.category===state.category);
-        return matchText && matchCat;
-      });
-      state.filtered = filtered;
-      $grid.innerHTML = filtered.map((it)=> cardTpl(it)).join('');
     }
 
     function render(){ renderTabs(); renderGrid(); }
@@ -419,8 +407,6 @@
         embedUrl: $fEmbed.value.trim() || '',
         image: $fImage.value.trim()
       };
-      // Si hay embedUrl, ignoramos la preview de imagen en la tarjeta
-      if(data.embedUrl) { data.image = data.image; }
       const id = $idx.value ? String($idx.value) : null;
       if(id){
         const pos = state.links.findIndex(x=> String(x.id)===String(id));
@@ -558,6 +544,10 @@
         state.links.unshift({id: '777777', title:'Test Img Local', url:'https://ejemplo.com', image: gif1px, desc:'img local', category: state.categories[0]});
         saveLinks(); renderGrid();
         assert('Acepta dataURL como imagen', $grid.innerHTML.includes('data:image/gif;base64'));
+        // Test eliminar link
+        const testId='999999'; state.links.unshift({id:testId, title:'Eliminar', url:'https://ejemplo.com', desc:'t', category: state.categories[0]}); saveLinks();
+        const before=state.links.length; const p=state.links.findIndex(x=>x.id===testId); if(p>-1){ state.links.splice(p,1); }
+        saveLinks(); renderGrid(); const after=state.links.length; assert('Eliminar link actualiza lista', after===before-1);
         // Limpieza test
         const pos = state.links.findIndex(x=>x.id==='777777'); if(pos>-1){ state.links.splice(pos,1); saveLinks(); renderGrid(); }
         const ok = tests.filter(t=>t.ok).length; const fail = tests.length-ok; console.log('Linkary Tests'); tests.forEach(t=>console.log(`${t.ok?'✅':'❌'} ${t.n}`)); if(fail) console.warn(`Fallaron ${fail}/${tests.length}`);
@@ -566,4 +556,3 @@
   </script>
 </body>
 </html>
-
