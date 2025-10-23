@@ -65,6 +65,7 @@
     .modal footer{display:flex; justify-content:flex-end; gap:10px; padding:14px 16px; border-top:1px solid #22324a}
 
     .form{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px}
+    .form label{display:flex; flex-direction:column; gap:8px}
     .form .full{grid-column:1 / -1}
     .preview{grid-column:1 / -1; display:flex; align-items:center; gap:12px}
     .preview img{width:180px; height:110px; object-fit:cover; border-radius:12px; border:1px solid #22324a}
@@ -73,6 +74,20 @@
     /* ===== Responsive (móvil) ===== */
     @media (max-width: 680px){
       .wrap{padding:12px}
+      header .bar{gap:8px; flex-wrap:wrap}
+      #search{flex:1 1 100%; min-width:0}
+      .btn{padding:8px 12px; border-radius:10px}
+      .tabs{gap:6px; margin-top:8px}
+      .tab{padding:6px 10px; font-size:12px}
+      .grid{grid-template-columns:1fr; gap:14px}
+      .card{border-radius:16px}
+      .open{padding:5px 8px; font-size:12px}
+      .open.reel{right:80px}
+      /* FORMS: una sola columna y tipografía mayor para iOS */
+      .modal{width:94vw}
+      .form{grid-template-columns:1fr; gap:14px}
+      .form input, .form textarea, .form select{font-size:16px}
+    }
       header .bar{gap:8px; flex-wrap:wrap}
       #search{flex:1 1 100%; min-width:0}
       .btn{padding:8px 12px; border-radius:10px}
