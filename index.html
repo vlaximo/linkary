@@ -3,19 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>LinkHub Ejecutivo</title>
-  <meta name="description" content="Tablero elegante de accesos rápidos a tus links con imágenes, títulos, descripciones y categorías. Con agregar, editar y eliminar de enlaces y categorías, e importación/exportación JSON." />
+  <title>Linkary</title>
+  <meta name="description" content="Guarda, clasifica y comparte tus links con previsualizaciones de reels y videos (Instagram, TikTok, YouTube)." />
   <style>
     :root{
-      --bg:#0b0f14;
-      --card:#0f1621cc;
-      --text:#dfe7f5;
-      --muted:#8aa0b6;
-      --accent:#3ea6ff;
-      --ring:#58c3ff55;
-      --shadow:0 10px 30px rgba(0,0,0,.35);
-      --radius:20px;
-      --danger:#ff5d5d;
+      --bg:#0b0f14; --card:#0f1621cc; --text:#dfe7f5; --muted:#8aa0b6; --accent:#3ea6ff; --ring:#58c3ff55; --shadow:0 10px 30px rgba(0,0,0,.35); --radius:20px; --danger:#ff5d5d;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -46,7 +38,8 @@
 
     .card{position:relative; overflow:hidden; border-radius:var(--radius); background:var(--card); border:1px solid #1c2736; box-shadow:var(--shadow); transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
     .card:hover{transform:translateY(-3px); box-shadow:0 18px 40px rgba(0,0,0,.45); border-color:#29435d}
-    .thumb{width:100%; aspect-ratio:16/9; object-fit:cover; background:#111722}
+    .media{width:100%; aspect-ratio:16/9; background:#111722; display:block}
+    .thumb{width:100%; height:100%; object-fit:cover}
     .content{padding:14px}
     .title{font-weight:600; font-size:16px; line-height:1.25; margin:0 0 6px}
     .desc{font-size:13px; color:var(--muted); margin:0 0 8px; min-height:38px}
@@ -54,10 +47,14 @@
     .meta img{width:16px; height:16px; border-radius:4px}
     .chip{position:absolute; left:12px; top:12px; font-size:11px; padding:6px 8px; border-radius:999px; border:1px solid #2a3a52; background:rgba(0,0,0,.45)}
     .open{position:absolute; top:12px; right:12px; font-size:12px; background:rgba(0,0,0,.5); color:#fff; padding:6px 8px; border-radius:10px; text-decoration:none; border:1px solid #2a3a52}
+    .open.reel{right:92px}
     .open:hover{background:rgba(0,0,0,.7)}
     .tools{position:absolute; right:12px; bottom:12px; display:flex; gap:6px}
     .tool{font-size:12px; background:rgba(0,0,0,.45); color:#fff; padding:6px 8px; border-radius:999px; border:1px solid #2a3a52; cursor:pointer}
     .tool:hover{background:rgba(0,0,0,.6)}
+
+    .embed-wrapper{width:100%; aspect-ratio:16/9; overflow:hidden}
+    .embed-wrapper iframe{width:100%; height:100%; border:0}
 
     /* Modal base */
     .backdrop{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:50}
@@ -83,7 +80,7 @@
 <body>
   <header>
     <div class="wrap" style="display:flex; align-items:center; gap:14px;">
-      <div class="brand"><div class="logo"></div><h1>LinkHub Ejecutivo</h1></div>
+      <div class="brand"><div class="logo"></div><h1>Linkary</h1></div>
       <div class="actions" style="margin-left:auto">
         <div class="bar">
           <input id="search" type="search" placeholder="Buscar por título o dominio… (Ctrl/⌘+K)" />
@@ -122,6 +119,9 @@
           <label class="full">Descripción
             <textarea id="fDesc" rows="3" placeholder="¿De qué trata este enlace?"></textarea>
           </label>
+          <label class="full">Reel/Video (opcional)
+            <input type="url" id="fEmbed" placeholder="URL de Instagram, TikTok o YouTube" />
+          </label>
           <label>Imagen por URL (opcional)
             <input type="url" id="fImage" placeholder="https://…/imagen.jpg" />
           </label>
@@ -130,7 +130,7 @@
           </label>
           <div class="preview">
             <img id="fPreview" alt="Previsualización" src="" style="display:none" />
-            <span class="muted" id="fInfo">Puedes usar **una**: por URL o cargando desde tu PC. Si subes local, se guarda embebida en el navegador (base64).</span>
+            <span class="muted" id="fInfo">Usa **una** de estas opciones: video (reel) o imagen. Si subes local, se guarda en base64 en tu navegador.</span>
             <button class="btn ghost" type="button" id="fClearImg">Quitar imagen</button>
           </div>
         </form>
@@ -164,7 +164,7 @@
 
   <script>
     // ===== Persistencia =====
-    const LS_LINKS = 'linkhub:links:v7';
+    const LS_LINKS = 'linkhub:links:v8';
     const LS_CATS  = 'linkhub:cats:v1';
 
     const DEFAULT_CATS = [
@@ -175,12 +175,12 @@
       'Link para empresas y empleados',
       'Link para emprendedores',
       'Link de Ocio y hobbies',
-      'Link IA'
+      'Link I.A.'
     ];
 
     const DEMO = [
       { id: String(Date.now()),   title: 'Curso de HTML básico', url: 'https://developer.mozilla.org/es/docs/Learn/Getting_started_with_the_web/HTML_basics', image: 'https://images.unsplash.com/photo-1542831371-29b0f74f9713?w=1600&q=80&auto=format&fit=crop', desc: 'Guía introductoria al lenguaje HTML, ideal para principiantes.', category: 'Links para estudiar' },
-      { id: String(Date.now()+1), title: 'OpenAI', url: 'https://openai.com', desc: 'Explora novedades y herramientas de IA.', category: 'Link IA' }
+      { id: String(Date.now()+1), title: 'OpenAI', url: 'https://openai.com', desc: 'Explora novedades y herramientas de IA.', category: 'Link I.A.' }
     ];
 
     // ===== Elementos =====
@@ -201,6 +201,7 @@
     const $fTitle = document.getElementById('fTitle');
     const $fUrl = document.getElementById('fUrl');
     const $fDesc = document.getElementById('fDesc');
+    const $fEmbed = document.getElementById('fEmbed');
     const $fImage = document.getElementById('fImage');
     const $fImageFile = document.getElementById('fImageFile');
     const $fPreview = document.getElementById('fPreview');
@@ -230,6 +231,22 @@
     function saveLinks(){ localStorage.setItem(LS_LINKS, JSON.stringify(state.links)); }
     function saveCats(){ localStorage.setItem(LS_CATS, JSON.stringify(state.categories)); }
 
+    function ensureScript(id, src){ if(document.getElementById(id)) return; const s=document.createElement('script'); s.id=id; s.src=src; s.async=true; document.body.appendChild(s); }
+
+    function detectEmbed(url){
+      if(!url) return null;
+      try{ const u = new URL(url); const h = u.hostname.replace('www.','');
+        // YouTube
+        const ytId = (h.includes('youtube.com') && u.searchParams.get('v')) || (h==='youtu.be' && u.pathname.slice(1));
+        if(ytId){ return {provider:'youtube', embed:`<div class="embed-wrapper"><iframe src="https://www.youtube.com/embed/${ytId}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>`}; }
+        // Instagram (reels, posts)
+        if(h.includes('instagram.com')){ ensureScript('instgrm-embed','https://www.instagram.com/embed.js'); return {provider:'instagram', embed:`<blockquote class="instagram-media" data-instgrm-permalink="${url}" data-instgrm-version="14" style="margin:0 auto; background:#000;"> </blockquote>`}; }
+        // TikTok
+        if(h.includes('tiktok.com')){ ensureScript('tiktok-embed','https://www.tiktok.com/embed.js'); return {provider:'tiktok', embed:`<blockquote class="tiktok-embed" cite="${url}" data-video-id="" style="max-width:100%;min-width:100%"><section></section></blockquote>`}; }
+      }catch(e){ return null }
+      return null;
+    }
+
     // ===== Render =====
     function countByCat(list){
       const cats = [ALL, ...state.categories];
@@ -248,14 +265,23 @@
       $tabs.querySelectorAll('.tab').forEach(b=> b.onclick = ()=>{ state.category=b.dataset.cat; renderGrid(); });
     }
 
-    function cardTpl(item){
+    function mediaTpl(item){
+      if(item.embedUrl){
+        const det = detectEmbed(item.embedUrl);
+        if(det) return det.embed;
+      }
       const img = item.image || fallbackImg(item.url);
+      return img? `<div class="media"><img class="thumb" loading="lazy" src="${img}" alt=""></div>` : `<div class="media"></div>`;
+    }
+
+    function cardTpl(item){
       const dom = domainFrom(item.url);
       return `
         <article class="card">
           <span class="chip">${item.category||'Sin categoría'}</span>
+          <button type="button" class="open reel" data-open="reel" data-id="${String(item.id)}" title="Abrir reel">Abrir reel</button>
           <a class="open" href="${item.url}" target="_blank" rel="noopener">Abrir</a>
-          ${img? `<img class="thumb" loading="lazy" src="${img}" alt="">` : `<div class="thumb"></div>`}
+          ${mediaTpl(item)}
           <div class="content">
             <h3 class="title">${item.title}</h3>
             <p class="desc">${item.desc? item.desc: ''}</p>
@@ -283,17 +309,28 @@
 
     function render(){ renderTabs(); renderGrid(); }
 
-    // ===== Delegación de eventos (una sola vez) =====
-    // Acciones en tarjetas (editar/eliminar)
+    // Delegación: acciones de tarjetas
     $grid.addEventListener('click', (ev)=>{
-      const btn = ev.target.closest('.tool');
-      if(!btn) return;
-      const id = String(btn.dataset.id||'');
-      const act = btn.dataset.action;
-      const item = state.links.find(x=> String(x.id)===id);
-      if(!item) return;
-      if(act==='edit') openForm(item);
-      if(act==='del') deleteItem(item);
+      // Botón de herramientas (editar/eliminar)
+      const toolBtn = ev.target.closest('.tool');
+      if(toolBtn){
+        const id = String(toolBtn.dataset.id||'');
+        const act = toolBtn.dataset.action;
+        const item = state.links.find(x=> String(x.id)===id);
+        if(!item) return;
+        if(act==='edit') openForm(item);
+        if(act==='del') deleteItem(item);
+        return;
+      }
+      // Botón Abrir reel
+      const reelBtn = ev.target.closest('[data-open="reel"]');
+      if(reelBtn){
+        const id = String(reelBtn.dataset.id||'');
+        const item = state.links.find(x=> String(x.id)===id);
+        if(!item) return;
+        if(item.embedUrl){ window.open(item.embedUrl, '_blank'); }
+        else { alert('No se guardó ningún reel para este link.'); }
+      }
     });
 
     // ===== CRUD Enlaces =====
@@ -305,8 +342,9 @@
         $fTitle.value = item.title||'';
         $fUrl.value = item.url||'';
         $fDesc.value = item.desc||'';
+        $fEmbed.value = item.embedUrl || '';
         $fImage.value = item.image && !item.image.startsWith('data:') ? item.image : '';
-        if(item.image){ showPreview(item.image); }
+        if(item.image){ showPreview(item.image); } else { hidePreview(); }
         document.getElementById('dlgTitle').textContent = 'Editar link';
       } else {
         $idx.value = '';
@@ -314,6 +352,7 @@
         $fTitle.value = '';
         $fUrl.value = '';
         $fDesc.value = '';
+        $fEmbed.value = '';
         $fImage.value = '';
         hidePreview();
         document.getElementById('dlgTitle').textContent = 'Agregar link';
@@ -324,18 +363,15 @@
 
     function closeForm(){ $backdrop.classList.remove('active'); }
 
-    function showPreview(src){
-      if(src){ $fPreview.src = src; $fPreview.style.display = 'block'; }
-      else hidePreview();
-    }
+    function showPreview(src){ if(src){ $fPreview.src = src; $fPreview.style.display = 'block'; } }
     function hidePreview(){ $fPreview.src = ''; $fPreview.style.display = 'none'; }
 
-    // Cargar imagen local → convertir a DataURL y ponerla en el campo imagen
+    // Cargar imagen local → dataURL
     $fImageFile.addEventListener('change', async (e)=>{
       const file = e.target.files && e.target.files[0];
       if(!file) return;
       if(!file.type.startsWith('image/')){ alert('Selecciona un archivo de imagen.'); return; }
-      if(file.size > 2 * 1024 * 1024){ if(!confirm('La imagen pesa más de 2MB. ¿Continuar? (podría ocupar mucho en el respaldo)')) return; }
+      if(file.size > 2 * 1024 * 1024){ if(!confirm('La imagen pesa más de 2MB. ¿Continuar?')) return; }
       const reader = new FileReader();
       reader.onload = ()=>{ const dataUrl = reader.result; $fImage.value = String(dataUrl); showPreview(String(dataUrl)); };
       reader.onerror = ()=> alert('No se pudo leer el archivo.');
@@ -352,8 +388,11 @@
         title: $fTitle.value.trim(),
         url: $fUrl.value.trim(),
         desc: $fDesc.value.trim(),
-        image: $fImage.value.trim() // puede ser URL o data:base64
+        embedUrl: $fEmbed.value.trim() || '',
+        image: $fImage.value.trim()
       };
+      // Si hay embedUrl, ignoramos la preview de imagen en la tarjeta
+      if(data.embedUrl) { data.image = data.image; }
       const id = $idx.value ? String($idx.value) : null;
       if(id){
         const pos = state.links.findIndex(x=> String(x.id)===String(id));
@@ -378,7 +417,6 @@
     function closeCatManager(){ $backdropCats.classList.remove('active'); }
 
     function drawCatList(){
-      if(state.categories.length===0){ state.categories = [...DEFAULT_CATS]; saveCats(); }
       $catList.innerHTML = state.categories.map((name, i)=>{
         return `
           <div class="cat-item">
@@ -392,7 +430,6 @@
       }).join('');
     }
 
-    // Delegación para botones del gestor de categorías (una sola vez)
     $catList.addEventListener('click', (e)=>{
       const btn = e.target.closest('button');
       if(!btn) return;
@@ -412,8 +449,8 @@
       if(act==='del'){
         const toDel = state.categories[idx];
         if(!confirm(`Eliminar la categoría "${toDel}"? Los links se reasignarán.`)) return;
-        const fallback = state.categories.find((c,j)=> j!==idx) || null;
-        state.links = state.links.map(x=> x.category===toDel? {...x, category: (fallback||'') }: x);
+        const fallback = state.categories.find((c,j)=> j!==idx) || '';
+        state.links = state.links.map(x=> x.category===toDel? {...x, category: fallback }: x);
         state.categories.splice(idx,1);
         saveCats(); saveLinks();
         if(state.category===toDel) state.category = ALL;
@@ -430,7 +467,7 @@
       saveCats(); render(); drawCatList();
     }
 
-    // ===== Eventos =====
+    // ===== Eventos base =====
     $newBtn.onclick = ()=> openForm();
     $cancelBtn.onclick = (e)=>{ e.preventDefault(); closeForm(); };
     $saveBtn.onclick = (e)=>{ e.preventDefault(); saveForm(); };
@@ -466,29 +503,14 @@
         if(Array.isArray(data)){
           if(!data.every(x=> typeof x.url==='string')) throw new Error('El JSON no parece ser una lista válida de enlaces.');
           state.links = data.map(x=> ({ id: String(x.id || Date.now()+Math.random()), ...x }));
-          saveLinks();
-          render();
-          alert(`Importado ${state.links.length} enlaces.`);
+          saveLinks(); render(); alert(`Importado ${state.links.length} enlaces.`);
         } else if (data && (Array.isArray(data.links) || Array.isArray(data.categories))){
-          if(Array.isArray(data.categories)){
-            state.categories = data.categories.filter(Boolean);
-            saveCats();
-          }
-          if(Array.isArray(data.links)){
-            state.links = data.links.map(x=> ({ id: String(x.id || Date.now()+Math.random()), ...x }));
-            saveLinks();
-          }
-          render();
-          alert(`Importación completa. Enlaces: ${state.links.length}${Array.isArray(data.categories)?`, Categorías: ${state.categories.length}`:''}`);
-        } else {
-          throw new Error('Formato no reconocido. Usa una lista de enlaces o un objeto {links, categories}.');
-        }
-      } catch(err){
-        console.warn('Error al importar:', err);
-        alert('No se pudo importar el JSON: '+ err.message);
-      } finally {
-        $importFile.value = '';
-      }
+          if(Array.isArray(data.categories)){ state.categories = data.categories.filter(Boolean); saveCats(); }
+          if(Array.isArray(data.links)){ state.links = data.links.map(x=> ({ id: String(x.id || Date.now()+Math.random()), ...x })); saveLinks(); }
+          render(); alert(`Importación completa. Enlaces: ${state.links.length}${Array.isArray(data.categories)?`, Categorías: ${state.categories.length}`:''}`);
+        } else { throw new Error('Formato no reconocido. Usa una lista de enlaces o un objeto {links, categories}.'); }
+      } catch(err){ console.warn('Error al importar:', err); alert('No se pudo importar el JSON: '+ err.message); }
+      finally { $importFile.value = ''; }
     };
 
     // ===== Init =====
@@ -498,20 +520,19 @@
     (function runTests(){
       try{
         const tests=[]; const assert=(n,c)=>tests.push({n,ok:!!c});
-        // Tabs
         assert('Renderiza pestañas', $tabs.children.length === (1 + state.categories.length));
-        // Grid
         assert('Renderiza tarjetas', $grid.children.length>0);
-        // Imagen data URL preferida
+        // Test YouTube embed detection
+        const detYT = detectEmbed('https://youtu.be/dQw4w9WgXcQ');
+        assert('Detecta YouTube', detYT && detYT.provider==='youtube');
+        // Test imagen base64
         const gif1px = 'data:image/gif;base64,R0lGODlhAQABAIAAAAUEBAgAAA7';
-        state.links.unshift({id: 777777, title:'Test Img Local', url:'https://ejemplo.com', image: gif1px, desc:'img local', category: state.categories[0]});
+        state.links.unshift({id: '777777', title:'Test Img Local', url:'https://ejemplo.com', image: gif1px, desc:'img local', category: state.categories[0]});
         saveLinks(); renderGrid();
         assert('Acepta dataURL como imagen', $grid.innerHTML.includes('data:image/gif;base64'));
         // Limpieza test
-        const pos = state.links.findIndex(x=>x.id===777777); if(pos>-1){ state.links.splice(pos,1); saveLinks(); renderGrid(); }
-
-        const ok = tests.filter(t=>t.ok).length; const fail = tests.length-ok;
-        console.log('LinkHub Tests'); tests.forEach(t=>console.log(`${t.ok?'✅':'❌'} ${t.n}`)); if(fail) console.warn(`Fallaron ${fail}/${tests.length}`);
+        const pos = state.links.findIndex(x=>x.id==='777777'); if(pos>-1){ state.links.splice(pos,1); saveLinks(); renderGrid(); }
+        const ok = tests.filter(t=>t.ok).length; const fail = tests.length-ok; console.log('Linkary Tests'); tests.forEach(t=>console.log(`${t.ok?'✅':'❌'} ${t.n}`)); if(fail) console.warn(`Fallaron ${fail}/${tests.length}`);
       }catch(err){ console.warn('Error en pruebas:', err); }
     })();
   </script>
