@@ -58,11 +58,11 @@
     /* Modal base */
     .backdrop{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:50}
     .backdrop.active{display:flex}
-    .modal{width:min(860px,92vw); background:#0f1621; border:1px solid #22324a; border-radius:16px; box-shadow:var(--shadow)}
+    .modal{width:min(860px,92vw); background:#0f1621; border:1px solid #22324a; border-radius:16px; box-shadow:var(--shadow); max-height:90vh; display:flex; flex-direction:column}
     .modal header{position:relative; border-bottom:1px solid #22324a; background:#0f1621}
     .modal .wrap{padding:14px 16px}
-    .modal main{padding:0}
-    .modal footer{display:flex; justify-content:flex-end; gap:10px; padding:14px 16px; border-top:1px solid #22324a}
+    .modal main{padding:0; overflow:auto; -webkit-overflow-scrolling:touch}
+    .modal footer{display:flex; justify-content:flex-end; gap:10px; padding:14px 16px; border-top:1px solid #22324a; position:sticky; bottom:0; background:#0f1621}
 
     .form{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px}
     .form label{display:flex; flex-direction:column; gap:8px}
