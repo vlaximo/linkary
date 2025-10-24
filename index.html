@@ -4,25 +4,64 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Linkary</title>
+  <link rel="icon" type="image/png" href="logo-linkary.png" />
+      <stop offset="60%" stop-color="#6A63FF"/>
+      <stop offset="100%" stop-color="#FF4FB6"/>
+    </linearGradient></defs>
+    <rect x="4" y="4" width="56" height="56" rx="14" fill="#ffffff"/>
+    <path d="M22 24a8 8 0 0 1 8-8h4a8 8 0 0 1 8 8v4h-6v-4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16a8 8 0 0 1-8 8h-4a8 8 0 0 1-8-8v-4h6v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V24Z" fill="url(%23g)"/>
+  </svg>' />
+        <stop offset="60%" stop-color="#7B61FF"/>
+        <stop offset="100%" stop-color="#FF4FB6"/>
+      </linearGradient>
+    </defs>
+    <rect x="4" y="4" width="56" height="56" rx="14" fill="#0b0f14"/>
+    <path d="M22 24a8 8 0 0 1 8-8h4a8 8 0 0 1 8 8v4h-6v-4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16a8 8 0 0 1-8 8h-4a8 8 0 0 1-8-8v-4h6v4a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2V24Z" fill="url(%23g)"/>
+  </svg>'/>
   <meta name="description" content="Guarda, clasifica y comparte tus links con previsualizaciones de reels y videos (Instagram, TikTok, YouTube)." />
   <style>
-    :root{ --bg:#0b0f14; --card:#0f1621cc; --text:#dfe7f5; --muted:#8aa0b6; --accent:#3ea6ff; --ring:#58c3ff55; --shadow:0 10px 30px rgba(0,0,0,.35); --radius:20px; --danger:#ff5d5d; }
+    :root{
+      /* Tema claro basado en el logo */
+      --bg:#ffffff;
+      --card:#ffffff;
+      --text:#182230;
+      --muted:#5c6b7d;
+      --line:#e7edf5;
+      --accentA:#33C3FF; /* azul/cian del logo */
+      --accentB:#6A63FF; /* violeta del logo */
+      --accentC:#FF4FB6; /* fucsia del logo */
+      --accentWarm:#FF6A3D; /* naranja del logo */
+      --gradPrimary: linear-gradient(135deg, var(--accentA), var(--accentB) 50%, var(--accentC));
+      --gradWarm: linear-gradient(135deg, var(--accentWarm), var(--accentC));
+      --ring:#72c8ff66;
+      --shadow:0 8px 24px rgba(15,35,55,.08);
+      --radius:18px; --danger:#ff5d5d;
+    }
     *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; color:var(--text); background: radial-gradient(1200px 700px at 10% -10%, #0f2541 0,#0b0f14 60%), radial-gradient(900px 500px at 110% 20%, #1a2433 0,#0b0f14 60%)}
-    header{position:sticky; top:0; z-index:10; backdrop-filter:saturate(160%) blur(10px); background:linear-gradient(180deg, rgba(11,15,20,.9), rgba(11,15,20,.6) 60%, transparent); border-bottom:1px solid #1b2636}
+    html,body{margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; color:var(--text); background:var(--bg);} 
+    body{margin:0; font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif; color:var(--text); 
+      background:
+        radial-gradient(900px 600px at 15% -10%, rgba(62,166,255,.28), transparent 60%),
+        radial-gradient(800px 500px at 110% 10%, rgba(255,79,182,.22), transparent 60%),
+        radial-gradient(700px 500px at 60% 120%, rgba(255,106,61,.15), transparent 60%),
+        #0b0f14;
+    }
+    header{position:sticky; top:0; z-index:10; backdrop-filter:saturate(140%) blur(6px); background:rgba(255,255,255,.86); border-bottom:1px solid var(--line);} 
     .wrap{max-width:1200px; margin:0 auto; padding:18px}
     .brand{display:flex; align-items:center; gap:14px}
-    .logo{width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, var(--accent), #8ed0ff); box-shadow:0 2px 10px #2f7fb833}
+    .logo{display:none} /* deprecated */
+    .logo-img{display:block; width:40px; height:40px; border-radius:12px; background:#ffffff; border:1px solid var(--line); box-shadow:0 2px 8px rgba(0,0,0,.06)}
+    @media (max-width:680px){ .logo-img{width:36px; height:36px; border-radius:10px} } 
     h1{font-size:20px; margin:0}
     .actions{display:flex; gap:10px; margin-left:auto}
     .bar{display:flex; align-items:center; gap:14px}
-    input[type="search"], input[type="text"], input[type="url"], textarea, select{padding:12px 14px; border-radius:12px; border:1px solid #243246; background:#0d141e; color:var(--text); outline:none}
+    input[type="search"], input[type="text"], input[type="url"], textarea, select{padding:12px 14px; border-radius:12px; border:1px solid var(--line); background:#f7f9fc; color:var(--text); outline:none} 
     input[type="search"]{flex:1; min-width:230px}
-    input[type="search"]:focus, input:focus, textarea:focus, select:focus{box-shadow:0 0 0 4px var(--ring); border-color:#2b3c56}
-    .btn{padding:10px 14px; border-radius:12px; background:#122033; color:var(--text); border:1px solid #22324a; cursor:pointer}
+    input[type="search"]:focus, input:focus, textarea:focus, select:focus{box-shadow:0 0 0 4px var(--ring); border-color:#c8dcff} 
+    .btn{padding:10px 14px; border-radius:12px; background:#f1f5fb; color:#213047; border:1px solid var(--line); cursor:pointer}
+    .btn:hover{background:#eaf0ff} 
     .btn:hover{background:#142540}
-    .btn.primary{background:linear-gradient(135deg, #1d5b8e, #3ea6ff); border:none}
+    .btn.primary{background:var(--gradPrimary); border:none; color:#fff; font-weight:600} 
     .btn.ghost{background:transparent; border:1px dashed #2f4561}
     .btn.danger{background:#361c1c; border:1px solid #5a2d2d}
 
@@ -30,21 +69,23 @@
     .grid{max-width:1200px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:18px}
 
     .tabs{max-width:1200px; margin:6px auto 16px; display:flex; flex-wrap:wrap; gap:8px}
-    .tab{border:1px solid #22324a; background:#0e1724; color:var(--text); padding:8px 12px; border-radius:999px; cursor:pointer; font-size:13px}
-    .tab[data-active="true"]{background:linear-gradient(135deg, #173652, #2e79b5); border-color:transparent}
+    .tab{border:1px solid var(--line); background:#f7f9fc; color:var(--text); padding:8px 12px; border-radius:999px; cursor:pointer; font-size:13px} 
+    .tab[data-active="true"]{background:var(--gradPrimary); color:#ffffff; border-color:transparent; box-shadow:0 6px 16px rgba(60,120,255,.18)} 
     .tab .badge{margin-left:8px; font-size:11px; opacity:.85; background:#0a1420; padding:2px 6px; border-radius:999px; border:1px solid #22324a}
 
-    .card{position:relative; overflow:hidden; border-radius:var(--radius); background:var(--card); border:1px solid #1c2736; box-shadow:var(--shadow); transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
+    .card{position:relative; overflow:hidden; border-radius:var(--radius); background:var(--card); border:1px solid var(--line); box-shadow:var(--shadow); transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease} 
     .card:hover{transform:translateY(-3px); box-shadow:0 18px 40px rgba(0,0,0,.45); border-color:#29435d}
-    .media{width:100%; aspect-ratio:16/9; background:#111722; display:block}
+    .media{width:100%; aspect-ratio:16/9; background:#f2f5fb; display:block; border-bottom:1px solid var(--line)} 
     .thumb{width:100%; height:100%; object-fit:cover}
     .content{padding:14px}
     .title{font-weight:600; font-size:16px; line-height:1.25; margin:0 0 6px}
     .desc{font-size:13px; color:var(--muted); margin:0 0 8px; min-height:38px}
     .meta{display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px}
     .meta img{width:16px; height:16px; border-radius:4px}
-    .chip{position:absolute; left:12px; top:12px; font-size:11px; padding:6px 8px; border-radius:999px; border:1px solid #2a3a52; background:rgba(0,0,0,.45)}
-    .open{position:absolute; top:12px; right:12px; font-size:12px; background:rgba(0,0,0,.5); color:#fff; padding:6px 8px; border-radius:10px; text-decoration:none; border:1px solid #2a3a52}
+    .chip{position:absolute; left:12px; top:12px; font-size:11px; padding:6px 8px; border-radius:999px; border:1px solid var(--line); background:#ffffffcc; color:#334155; backdrop-filter:saturate(140%) blur(6px)} 
+    .open{position:absolute; top:12px; right:12px; font-size:12px; background:#ffffffea; color:#1d2a3a; padding:6px 10px; border-radius:12px; text-decoration:none; border:1px solid var(--line); box-shadow:0 4px 14px rgba(0,0,0,.06)}
+    .open.reel{right:102px} 
+    .open.reel{right:102px}
     .open.reel{right:92px}
     .open:hover{background:rgba(0,0,0,.7)}
     .tools{position:absolute; right:12px; bottom:12px; display:flex; gap:6px}
@@ -58,11 +99,11 @@
     /* Modal base */
     .backdrop{position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:50}
     .backdrop.active{display:flex}
-    .modal{width:min(860px,92vw); background:#0f1621; border:1px solid #22324a; border-radius:16px; box-shadow:var(--shadow); max-height:90vh; display:flex; flex-direction:column}
+    .modal{width:min(860px,92vw); background:#ffffff; border:1px solid var(--line); border-radius:16px; box-shadow:var(--shadow); max-height:90vh; display:flex; flex-direction:column} 
     .modal header{position:relative; border-bottom:1px solid #22324a; background:#0f1621}
     .modal .wrap{padding:14px 16px}
     .modal main{padding:0; overflow:auto; -webkit-overflow-scrolling:touch}
-    .modal footer{display:flex; justify-content:flex-end; gap:10px; padding:14px 16px; border-top:1px solid #22324a; position:sticky; bottom:0; background:#0f1621}
+    .modal footer{display:flex; justify-content:flex-end; gap:10px; padding:14px 16px; border-top:1px solid var(--line); position:sticky; bottom:0; background:#ffffff} 
 
     .form{display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px}
     .form label{display:flex; flex-direction:column; gap:8px}
@@ -74,6 +115,19 @@
     /* ===== Responsive (móvil) ===== */
     @media (max-width: 680px){
       .wrap{padding:12px}
+      header .bar{gap:8px; flex-wrap:wrap}
+      #search{flex:1 1 100%; min-width:0}
+      .btn{padding:10px 12px; border-radius:10px}
+      .tabs{gap:6px; margin-top:8px}
+      .tab{padding:6px 10px; font-size:12px}
+      .grid{grid-template-columns:1fr; gap:14px}
+      .card{border-radius:16px}
+      .open{padding:5px 8px; font-size:12px}
+      .open.reel{right:80px}
+      .modal{width:94vw}
+      .form{grid-template-columns:1fr; gap:14px}
+      .form input, .form textarea, .form select{font-size:16px}
+    }
       header .bar{gap:8px; flex-wrap:wrap}
       #search{flex:1 1 100%; min-width:0}
       .btn{padding:8px 12px; border-radius:10px}
@@ -108,7 +162,7 @@
 <body>
   <header>
     <div class="wrap" style="display:flex; align-items:center; gap:14px;">
-      <div class="brand"><div class="logo"></div><h1>Linkary</h1></div>
+      <div class="brand"><img src="logo-linkary.png" alt="Linkary logo" class="logo-img" /><h1>Linkary</h1></div>
       <div class="actions" style="margin-left:auto">
         <div class="bar">
           <input id="search" type="search" placeholder="Buscar por título o dominio… (Ctrl/⌘+K)" />
